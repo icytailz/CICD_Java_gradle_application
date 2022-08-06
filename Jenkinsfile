@@ -1,12 +1,14 @@
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'docker-jenkins-gradle-agent'
+        }
+    }
+    // triggers {
+    //     polSCM '*/2 * * * *'
+    // }
     stages {
         stage("sonarqube quality check") {
-            agent {
-                docker {
-                    image 'openjdk:11'
-                }     
-            }
             steps {
                 script {
                     withSonarQubeEnv(credentialsId: 'sonarqube-token') {
