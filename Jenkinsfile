@@ -54,7 +54,7 @@ podTemplate(yaml: '''
     container('kaniko') {
         stage('Build Java Gradle project') {
         sh '''
-            /kaniko/executor --context `pwd` --destination 172.105.229.18:8083/springapp:${VERSION}
+            /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
         '''
         }
       }
