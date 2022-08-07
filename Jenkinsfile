@@ -46,24 +46,18 @@ podTemplate(yaml: '''
                     error "Pipeline aborted due to quality gate failure: ${qg.status}"
                 }
              }
-            
-            
             sh './gradlew build'
-            
- 
          }
         }
       }
-    }
-
     stage('Build docker Image') {
-      container('kaniko') {
+    container('kaniko') {
         stage('Build Java Gradle project') {
-          sh '''
+        sh '''
             /kaniko/executor --context `pwd` --destination 172.105.229.18:8083/springapp:${VERSION}
-          '''
+        '''
         }
       }
     }
-
+  }
 }
