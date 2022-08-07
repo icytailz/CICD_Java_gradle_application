@@ -48,14 +48,11 @@ podTemplate(yaml: '''
             }
         }
         stage('Build docker Image') {
-        environment {
-        VERSION = "${env.BUILD_NUMBER}"
-        }
         container('kaniko') {
             stage('Build and push image to Nexus repo') {
             sh '''
-                echo ${VERSION}
-                /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
+                echo ${BUILD_NUMBER}
+                /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${BUILD_NUMBER}
             '''
             }
           }
