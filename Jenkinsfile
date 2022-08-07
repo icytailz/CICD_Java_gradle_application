@@ -38,8 +38,8 @@ podTemplate(yaml: '''
                 withSonarQubeEnv(credentialsId: 'sonarqube-token') {
                     sh 'ls -la'
                     sh 'echo ${VERSION}'
-                    // sh 'chmod +x gradlew'
-                    // sh './gradlew sonarqube'
+                    sh 'chmod +x gradlew'
+                    sh './gradlew sonarqube'
                 }
                 timeout(time: 1, unit: 'HOURS') {
                     def qg = waitForQualityGate()
@@ -47,18 +47,18 @@ podTemplate(yaml: '''
                         error "Pipeline aborted due to quality gate failure: ${qg.status}"
                     }
                 }
-                // sh './gradlew build'
+                sh './gradlew build'
             }
             }
         }
-        // stage('Build docker Image') {
-        // container('kaniko') {
-        //     stage('Build and push image to Nexus repo') {
-        //     sh '''
-        //         /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
-        //     '''
-        //     }
-        //   }
-        // }
+        stage('Build docker Image') {
+        container('kaniko') {
+            stage('Build and push image to Nexus repo') {
+            sh '''
+                /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
+            '''
+            }
+          }
+        }
     }
     }
