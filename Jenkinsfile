@@ -35,25 +35,21 @@ podTemplate(yaml: '''
       git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
       container('gradle') {
         stage('Check code and build artifact') {
-          script {
-            {
             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
                 sh 'echo pwd'
                 sh 'chmod +x gradlew'
                 sh './gradlew sonarqube'
             }
-            }
-            {
             timeout(time: 1, unit: 'HOURS') {
                 def qg = waitForQualityGate()
                 if (qg.status != 'OK') {
                     error "Pipeline aborted due to quality gate failure: ${qg.status}"
                 }
              }
-            }
-            {
-                sh './gradlew build'
-            }
+            
+            
+            sh './gradlew build'
+            
  
          }
         }
