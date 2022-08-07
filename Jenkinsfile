@@ -63,11 +63,14 @@ podTemplate(yaml: '''
             }
         }
         stage ('sendmail'){
-            post {
-		        always {
-			    mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "jenkins.noti.mail@gmail.com";  
-		        }
-	        }  
+            echo "Mail Stage";
+
+            mail to: "jenkins.noti.mail@gmail.com",
+            cc: 'icy.tail@gmail.com', charset: 'UTF-8', 
+            from: 'jenkins.noti.mail@gmail.com', mimeType: 'text/html', replyTo: '', 
+            bcc: '',
+            subject: "CI: Project name -> ${env.JOB_NAME}",
+            body: "<b>Example</b><br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}";
         }
     }
 }
