@@ -36,10 +36,12 @@ podTemplate(yaml: '''
       container('gradle') {
         stage('Check code and build artifact') {
           script {
+            {
             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
                 sh 'echo pwd'
                 sh 'chmod +x gradlew'
                 sh './gradlew sonarqube'
+            }
             }
             {
             timeout(time: 1, unit: 'HOURS') {
