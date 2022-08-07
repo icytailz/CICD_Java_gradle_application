@@ -27,38 +27,38 @@ podTemplate(yaml: '''
             - key: .dockerconfigjson
               path: config.json
 ''') {
-  node(POD_LABEL) {
     environment {
-        VERSION = "${env.BUILD_ID}"
+        VERSION = "${env.BUILD_NUMBER}"
     }
-    stage('sonarqube quality check') {
-      git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
-      container('gradle') {
-        stage('Check code and build artifact') {
-            withSonarQubeEnv(credentialsId: 'sonarqube-token') {
-                sh 'ls -la'
-                sh 'echo ${VERSION}'
-                // sh 'chmod +x gradlew'
-                // sh './gradlew sonarqube'
-            }
-            timeout(time: 1, unit: 'HOURS') {
-                def qg = waitForQualityGate()
-                if (qg.status != 'OK') {
-                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
+    node(POD_LABEL) {
+        stage('Sonarqube quality check') {
+        git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
+        container('gradle') {
+            stage('Check code and build artifact') {
+                withSonarQubeEnv(credentialsId: 'sonarqube-token') {
+                    sh 'ls -la'
+                    sh 'echo ${VERSION}'
+                    // sh 'chmod +x gradlew'
+                    // sh './gradlew sonarqube'
                 }
-             }
-            // sh './gradlew build'
-         }
+                timeout(time: 1, unit: 'HOURS') {
+                    def qg = waitForQualityGate()
+                    if (qg.status != 'OK') {
+                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                    }
+                }
+                // sh './gradlew build'
+            }
+            }
         }
-      }
-    // stage('Build docker Image') {
-    // container('kaniko') {
-    //     stage('Build Java Gradle project') {
-    //     sh '''
-    //         /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
-    //     '''
-    //     }
-    //   }
-    // }
-  }
-}
+        // stage('Build docker Image') {
+        // container('kaniko') {
+        //     stage('Build and push image to Nexus repo') {
+        //     sh '''
+        //         /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
+        //     '''
+        //     }
+        //   }
+        // }
+    }
+    }
