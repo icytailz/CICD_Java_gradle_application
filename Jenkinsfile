@@ -1,6 +1,3 @@
-environment {
-    VERSION = "${env.BUILD_ID}"
-}
 podTemplate(yaml: '''
     apiVersion: v1
     kind: Pod
@@ -30,12 +27,16 @@ podTemplate(yaml: '''
             - key: .dockerconfigjson
               path: config.json
 ''') {
+  environment {
+        VERSION = "${env.BUILD_ID}"
+  }
   node(POD_LABEL) {
     stage('sonarqube quality check') {
       git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
       container('gradle') {
         stage('Check code and build artifact') {
             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
+                sh 'ls -la'
                 sh 'echo ${VERSION}'
                 // sh 'chmod +x gradlew'
                 // sh './gradlew sonarqube'
