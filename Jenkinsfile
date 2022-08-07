@@ -27,10 +27,10 @@ podTemplate(yaml: '''
             - key: .dockerconfigjson
               path: config.json
 ''') {
-  environment {
-        VERSION = "${env.BUILD_ID}"
-  }
   node(POD_LABEL) {
+    environment {
+        VERSION = "${env.BUILD_ID}"
+    }
     stage('sonarqube quality check') {
       git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
       container('gradle') {
