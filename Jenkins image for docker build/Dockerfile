@@ -19,4 +19,8 @@ RUN apt-get update && \
 
 RUN usermod -aG docker jenkins
 
+RUN mkdir -p /home/jenkins/agent
+
+RUN chown jenkins:jenkins /home/jenkins/agent
+
 USER jenkins
