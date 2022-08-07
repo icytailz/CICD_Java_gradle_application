@@ -1,52 +1,68 @@
-pipeline {
-    agent any
-    // triggers {
-    //     polSCM '* * * * *'
-    // }
-    environment {
-        VERSION = "${env.BUILD_ID}"
-    }
-    stages {
-        // stage("sonarqube quality check") {
-        //     agent {
-        //         node {
-        //             label 'docker-jenkins-gradle-agent'
-        //         }
-        //      }
-        //     steps {
-        //         script {
-        //             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
-        //                     sh 'chmod +x gradlew'
-        //                     sh './gradlew sonarqube'
-        //             }
-        //              timeout(time: 1, unit: 'HOURS') {
-        //                 def qg = waitForQualityGate()
-        //                 if (qg.status != 'OK') {
-        //                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
-        //               }
-        //             }
-        //         }
-        //     }
-        // }
-
-        stage("docker build & docker push"){
-            agent {
-                node {
-                    label 'docker-image-build-agent'
-                }
-             }
-            steps{
-                script{
-                    withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
-                             sh '''
-                                docker build -t 172.105.229.18:8083/springapp:${VERSION} .
-                                docker login -u admin -p $docker_password 172.105.229.18:8083 
-                                docker push  172.105.229.18:8083/springapp:${VERSION}
-                                docker rmi 172.105.229.18:8083/springapp:${VERSION}
-                            '''
-                    }
+environment {
+    VERSION = "${env.BUILD_ID}"
+}
+podTemplate(yaml: '''
+    apiVersion: v1
+    kind: Pod
+    spec:
+      containers:
+      - name: gradle
+        image: jenkins/agent:alpine-jdk11
+        command:
+        - sleep
+        args:
+        - 99d
+      - name: kaniko
+        image: gcr.io/kaniko-project/executor:debug
+        command:
+        - sleep
+        args:
+        - 9999999
+        volumeMounts:
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker
+      restartPolicy: Never
+      volumes:
+      - name: kaniko-secret
+        secret:
+            secretName: dockercred
+            items:
+            - key: .dockerconfigjson
+              path: config.json
+''') {
+  node(POD_LABEL) {
+    stage('sonarqube quality check') {
+      container('gradle') {
+        steps {
+          script {
+            withSonarQubeEnv(credentialsId: 'sonarqube-token') {
+                sh 'chmod +x gradlew'
+                sh './gradlew sonarqube'
+            }
+            timeout(time: 1, unit: 'HOURS') {
+                def qg = waitForQualityGate()
+                if (qg.status != 'OK') {
+                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
                 }
             }
+            {
+                sh './gradlew build'
+            }
+ 
+         }
         }
+      }
     }
+
+    stage('Build docker Image') {
+      container('kaniko') {
+        stage('Build Java Gradle project') {
+          sh '''
+            /kaniko/executor --context `pwd` --destination 172.105.229.18:8083/springapp:${VERSION}
+          '''
+        }
+      }
+    }
+
+  }
 }
