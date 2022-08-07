@@ -37,6 +37,7 @@ podTemplate(yaml: '''
           script {
             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
                 sh 'cd /home/jenkins/agent/workspace/java-gradle-app'
+                sh 'ls -la'
                 sh 'chmod +x gradlew'
                 sh './gradlew sonarqube'
             }
