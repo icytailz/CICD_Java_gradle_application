@@ -32,12 +32,12 @@ podTemplate(yaml: '''
 ''') {
   node(POD_LABEL) {
     stage('sonarqube quality check') {
+      git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
       container('gradle') {
         stage('Check code and build artifact') {
           script {
             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
-                sh 'cd /home/jenkins/agent/workspace/java-gradle-app'
-                sh 'ls -la'
+                sh 'echo pwd'
                 sh 'chmod +x gradlew'
                 sh './gradlew sonarqube'
             }
