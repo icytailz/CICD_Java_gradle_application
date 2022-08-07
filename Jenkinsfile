@@ -33,7 +33,7 @@ podTemplate(yaml: '''
   node(POD_LABEL) {
     stage('sonarqube quality check') {
       container('gradle') {
-        stage {
+        stage('Check code and build artifact') {
           script {
             withSonarQubeEnv(credentialsId: 'sonarqube-token') {
                 sh 'chmod +x gradlew'
