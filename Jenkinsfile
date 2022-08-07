@@ -27,9 +27,6 @@ podTemplate(yaml: '''
             - key: .dockerconfigjson
               path: config.json
 ''') {
-    environment {
-        VERSION = "${env.BUILD_NUMBER}"
-    }
     node(POD_LABEL) {
         stage('Sonarqube quality check') {
         git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
@@ -37,7 +34,7 @@ podTemplate(yaml: '''
             stage('Check code and build artifact') {
                 withSonarQubeEnv(credentialsId: 'sonarqube-token') {
                     sh 'ls -la'
-                    sh 'echo ${VERSION}'
+                    sh 'echo ${env.BUILD_NUMBER}'
                     sh 'chmod +x gradlew'
                     sh './gradlew sonarqube'
                 }
@@ -55,7 +52,7 @@ podTemplate(yaml: '''
         container('kaniko') {
             stage('Build and push image to Nexus repo') {
             sh '''
-                /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
+                /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${env.BUILD_NUMBER}
             '''
             }
           }
