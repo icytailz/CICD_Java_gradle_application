@@ -30,11 +30,11 @@ pipeline {
         }
 
         stage("docker build & docker push"){
-            // agent {
-            //     node {
-            //         label 'docker-image-build-agent'
-            //     }
-            //  }
+            agent {
+                node {
+                    label 'docker-image-build-agent'
+                }
+             }
             steps{
                 script{
                     withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
