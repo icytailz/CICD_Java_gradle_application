@@ -6,6 +6,12 @@ pipeline {
     kind: Pod
     spec:
       containers:
+      - name: helm
+        image: rancher/helm-controller
+        command:
+        - sleep
+        args:
+        - 99d
       - name: gradle
         image: jenkins/agent:alpine-jdk11
         command:
@@ -36,49 +42,62 @@ pipeline {
         VERSION = "${env.BUILD_NUMBER}"
     }
     stages {
-        stage ('Sonarqube quality check and build artifact') {
+    //     stage ('Sonarqube quality check and build artifact') {
+    //         steps {
+    //             container ('gradle'){
+    //                 script  {
+    //                     git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
+    //                     withSonarQubeEnv(credentialsId: 'sonarqube-token') {
+    //                         sh 'ls -la'
+    //                         sh 'chmod +x gradlew'
+    //                         sh './gradlew sonarqube'
+    //                     }
+    //                     timeout(time: 1, unit: 'HOURS') {
+    //                         def qg = waitForQualityGate()
+    //                         if (qg.status != 'OK') {
+    //                             error "Pipeline aborted due to quality gate failure: ${qg.status}"
+    //                         }
+    //                     }
+    //                     sh './gradlew build'
+    //                 }     
+    //             }
+    //         }
+    //     }
+    //     stage ('Build docker image and push to Nexus repo'){
+    //         steps {
+    //             container ('kaniko'){
+    //                 sh '''
+    //                     echo ${VERSION}
+    //                     /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
+    //                 '''
+    //             }
+    //         }
+    //     }
+        stage ('Identifying misconfigs using datree in helm charts'){
             steps {
-                container ('gradle'){
-                    script  {
-                        git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
-                        withSonarQubeEnv(credentialsId: 'sonarqube-token') {
-                            sh 'ls -la'
-                            sh 'chmod +x gradlew'
-                            sh './gradlew sonarqube'
+                container ('helm'){
+                    script {
+                        dir('kubernetes/'){
+                            sh 'helm plugin install https://github.com/datreeio/helm-datree'
+                            sh 'helm datree test myapp/'
                         }
-                        timeout(time: 1, unit: 'HOURS') {
-                            def qg = waitForQualityGate()
-                            if (qg.status != 'OK') {
-                                error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                            }
-                        }
-                        sh './gradlew build'
-                    }     
+                    }
                 }
             }
         }
-        stage ('Build docker image and push to Nexus repo'){
-            steps {
-                container ('kaniko'){
-                    sh '''
-                        echo ${VERSION}
-                        /kaniko/executor --context `pwd` --insecure --skip-tls-verify --destination 172.105.229.18:8083/springapp:${VERSION}
-                    '''
-                }
-            }
-        }
+
     }
     // post {
 	// 	always {
 	// 		mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "jenkins.noti.mail@gmail.com";  
 	// 	}
 	// }
-    post {
-		always {
-			emailext body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-                subject: "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}", to: "jenkins.noti.mail@gmail.com";  
-		}
-	}
+    // post {
+	// 	always {
+	// 		emailext body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}",
+    //             recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+    //             subject: "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}", to: "jenkins.noti.mail@gmail.com";  
+	// 	}
+	// }
 }
 
