@@ -7,7 +7,7 @@ pipeline {
     spec:
       containers:
       - name: helm
-        image: alpine/helm
+        image: dtzar/helm-kubectl
         command:
         - sleep
         args:
