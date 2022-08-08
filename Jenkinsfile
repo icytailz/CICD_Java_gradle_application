@@ -37,9 +37,6 @@ pipeline {
     }
     stages {
         stage ('Sonarqube quality check and build artifact') {
-            options {
-                
-            }
             steps {
                 container ('gradle'){
                     script  {
