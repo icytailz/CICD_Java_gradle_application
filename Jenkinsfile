@@ -38,22 +38,25 @@ pipeline {
     stages {
         stage ('Sonarqube quality check and build artifact') {
             options {
-                timeout(time: 1, unit: 'HOURS') {
-                    def qg = waitForQualityGate()
-                    if (qg.status != 'OK') {
-                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                    }
-                }
+                
             }
             steps {
                 container ('gradle'){
-                    git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
-                    withSonarQubeEnv(credentialsId: 'sonarqube-token') {
-                        sh 'ls -la'
-                        sh 'chmod +x gradlew'
-                        sh './gradlew sonarqube'
-                        sh './gradlew build'
-                    }
+                    script  {
+                        git url: 'https://github.com/icytailz/CICD_Java_gradle_application', branch: 'devops'
+                        withSonarQubeEnv(credentialsId: 'sonarqube-token') {
+                            sh 'ls -la'
+                            sh 'chmod +x gradlew'
+                            sh './gradlew sonarqube'
+                            sh './gradlew build'
+                        }
+                        timeout(time: 1, unit: 'HOURS') {
+                            def qg = waitForQualityGate()
+                            if (qg.status != 'OK') {
+                                error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                            }
+                        }
+                    }     
                 }
             }
         }
