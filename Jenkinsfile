@@ -81,7 +81,7 @@ pipeline {
                         sh 'pwd'
                         sh 'ls -la'
                         dir('kubernetes/'){
-                            sh 'helm datree test myapp/'
+                            sh 'helm datree test myapp/ --no-record'
                         }
                     }
                 }
