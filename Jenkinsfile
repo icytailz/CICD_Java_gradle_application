@@ -7,7 +7,7 @@ pipeline {
     spec:
       containers:
       - name: helm
-        image: rancher/helm-controller
+        image: alpine/helm
         command:
         - sleep
         args:
