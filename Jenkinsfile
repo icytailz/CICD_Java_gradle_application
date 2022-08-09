@@ -6,8 +6,8 @@ pipeline {
     kind: Pod
     spec:
       containers:
-      - name: helm
-        image: dtzar/helm-kubectl
+      - name: datree
+        image: datree/datree
         command:
         - sleep
         args:
@@ -75,13 +75,11 @@ pipeline {
     //     }
         stage ('Identifying misconfigs using datree in helm charts'){
             steps {
-                container ('helm'){
+                container ('datree'){
                     script {
-                        sh 'helm plugin install https://github.com/datreeio/helm-datree'
-                        sh 'pwd'
                         sh 'ls -la'
                         dir('kubernetes/'){
-                            sh 'helm datree test myapp/ --no-record'
+                            sh 'datree test myapp/'
                         }
                     }
                 }
