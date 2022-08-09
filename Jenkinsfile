@@ -8,6 +8,10 @@ pipeline {
       containers:
       - name: datree
         image: datree/datree
+        command:
+        - sleep
+        args:
+        - 99d
       - name: gradle
         image: jenkins/agent:alpine-jdk11
         command:
@@ -69,18 +73,18 @@ pipeline {
     //             }
     //         }
     //     }
-        stage ('Identifying misconfigs using datree in helm charts'){
-            steps {
-                container ('datree'){
-                    script {
-                        sh 'ls -la'
-                        dir('kubernetes/'){
-                            sh 'datree test myapp/'
+            stage ('Identifying misconfigs using datree in helm charts'){
+                steps {
+                    container ('datree'){
+                        script {
+                            sh 'ls -la'
+                            sh 'datree version'
+                            sh 'datree test kubernetes/myapp/'
+                        
                         }
                     }
                 }
             }
-        }
 
     }
     // post {
