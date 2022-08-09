@@ -8,10 +8,6 @@ pipeline {
       containers:
       - name: datree
         image: datree/datree
-        command:
-        - sleep
-        args:
-        - 99d
       - name: gradle
         image: jenkins/agent:alpine-jdk11
         command:
